@@ -1,5 +1,7 @@
 # boot-jar2bin
 
+[![Clojars Project](http://clojars.org/adzerk/boot-jar2bin/latest-version.svg)](http://clojars.org/adzerk/boot-jar2bin)
+
 A [Boot](http://boot-clj.com) plugin for producing standalone console executables from uberjars, inspired by [lein-bin](http://github.com/Raynes/lein-bin).
 
 # Usage
