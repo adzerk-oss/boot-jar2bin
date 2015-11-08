@@ -51,7 +51,7 @@ boot aot pom uber jar jar2bin --header head.sh
 
 ## Windows executables
 
-TODO: `jar2exe` task (using launch4j, probably)
+TODO: [`jar2exe` task (using launch4j, probably)](https://github.com/adzerk-oss/boot-jar2bin/issues/1)
 
 ## License
 
