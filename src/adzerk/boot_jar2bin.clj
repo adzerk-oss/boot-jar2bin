@@ -17,7 +17,7 @@
        (not-by-name ["aether.uber.jar"])
        (map tmp-file)))
 
-(deftask jar2bin
+(deftask bin
   "Builds a standalone binary executable from an uberjar.
 
    If `file` is not specified, builds an executable for every jar file in the
@@ -51,7 +51,7 @@
             (.setExecutable out-file true false))))
       (-> fileset (add-resource tgt) commit!))))
 
-(deftask jar2exe
+(deftask exe
   "If Launch4j is installed, uses it to build a standalone .exe file from an
    uberjar.
 
