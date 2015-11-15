@@ -76,6 +76,8 @@ As with the `bin` task, you can also specify an existing jar file:
 boot exe --file target/existing-jar-0.1.0.jar --output-dir bin
 ```
 
+This will create an executable `bin/existing-jar-0.1.0.exe`.
+
 ## License
 
 Copyright © 2015 Adzerk
