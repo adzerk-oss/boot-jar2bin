@@ -1,9 +1,13 @@
 (ns adzerk.boot-jar2bin
   {:boot/export-tasks true}
-  (:require [boot.core :refer :all]
-            [boot.util :as util]
-            [clojure.java.io :as io])
-  (:import java.io.FileOutputStream))
+  (:require [boot.core                    :refer :all]
+            [boot.util                    :as    util]
+            [clojure.java.io              :as    io]
+            [adzerk.boot-jar2bin.launch4j :refer (write-launch4j-config)])
+  (:import [java.io FileOutputStream FileWriter]))
+
+(defmacro assert-required [& locals]
+  `(do ~@(for [l locals] `(assert ~l (str "Required argument missing")))))
 
 (def ^:private default-header
   "#!/bin/sh\n\nexec java -jar $0 \"$@\"\n\n\n")
@@ -32,13 +36,13 @@
       (when-not (seq jars)
         (throw (Exception. "No jar files found.")))
       (doseq [jar jars]
-        (let [bin-fname (->> (.getName jar)
-                             (re-matches #"(.+)\.jar")
-                             second)
-              tgt-file  (io/file tgt bin-fname)
-              out-file  (when output-dir
-                          (doto (io/file output-dir bin-fname)
-                            io/make-parents))]
+        (let [bin-fname  (->> (.getName jar)
+                              (re-matches #"(.+)\.jar")
+                              second)
+              tgt-file   (io/file tgt bin-fname)
+              out-file   (when output-dir
+                           (doto (io/file output-dir bin-fname)
+                             io/make-parents))]
           (util/info "Creating %s binary...\n" bin-fname)
           (with-open [bin (FileOutputStream. tgt-file)]
             (if header
@@ -57,14 +61,36 @@
 
    If `file` is not specified, builds an executable for every jar file in the
    fileset."
-  [f file PATH file "The path to the uberjar."
-   x xml  PATH file "The path to a Launch4j configuration XML file."]
+  [f file       PATH    file "The path to the uberjar."
+   o output-dir PATH    str  "The output directory path."
+   n name       NAME    sym  "The name of the project."
+   m main       STR     sym  "The main class."
+   d desc       STR     str  "A description of the project."
+   c copyright  STR     str  "The project's copyright information."
+   v version    VERSION str  "The project version number."]
+  (assert-required output-dir version name main desc copyright)
   (with-pre-wrap fileset
-    (let [jars (if file [file] (jars-in-fileset fileset))
-          tgt  (tmp-dir!)]
+    (let [jars      (if file [file] (jars-in-fileset fileset))
+          tgt       (tmp-dir!)]
       (when-not (seq jars)
         (throw (Exception. "No jar files found.")))
-      ; this will throw a descriptive error if launch4j is not found on the $PATH
-      (util/dosh "launch4j" (str xml))
+      (doseq [jar jars]
+        (let [fname      (->> (.getName jar)
+                              (re-matches #"(.+)\.jar")
+                              second)
+              xml-fname  (str fname ".xml")
+              exe-fname  (str fname ".exe")
+              xml-file   (io/file tgt xml-fname)
+              out-file   (doto (io/file output-dir exe-fname) io/make-parents)]
+          (with-open [xml (FileWriter. xml-file)]
+            (write-launch4j-config {:jar-file     jar
+                                    :out-file     out-file
+                                    :main-class   main
+                                    :project-name name
+                                    :description  desc
+                                    :version      version
+                                    :copyright    copyright}
+                                   xml))
+          (util/dosh "launch4j" (.getPath xml-file))))
       (-> fileset (add-resource tgt) commit!))))
 
