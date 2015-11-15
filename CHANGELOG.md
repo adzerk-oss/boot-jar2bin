@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 1.0.0 (unreleased)
+## 1.0.0 (11/15/15)
 
 * `exe` task produces standalone Windows executables (.exe files) from jars, using Launch4j.
 
