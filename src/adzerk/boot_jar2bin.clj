@@ -3,14 +3,17 @@
   (:require [boot.core                    :refer :all]
             [boot.util                    :as    util]
             [clojure.java.io              :as    io]
+            [clojure.string               :as    str]
             [adzerk.boot-jar2bin.launch4j :refer (write-launch4j-config)])
   (:import [java.io FileOutputStream FileWriter]))
 
 (defmacro assert-required [& locals]
   `(do ~@(for [l locals] `(assert ~l (str "Required argument missing")))))
 
-(def ^:private default-header
-  "#!/bin/sh\n\nexec java -jar $0 \"$@\"\n\n\n")
+(defn- default-header
+  [jvm-opts]
+  (format "#!/bin/sh\n\nexec java %s -jar $0 \"$@\"\n\n\n"
+          (str/join \space jvm-opts)))
 
 (defn- jars-in-fileset
   [fileset]
@@ -26,13 +29,16 @@
 
    If `file` is not specified, builds an executable for every jar file in the
    fileset."
-  [f file       PATH file "The path to the uberjar."
-   o output-dir PATH str  "The output directory path."
-   H header     FILE file "A file containing a custom header to place at the beginning of the executable."]
+  [f file       PATH    file   "The path to the uberjar."
+   o output-dir PATH    str    "The output directory path."
+   H header     FILE    file   "A file containing a custom header to place at the beginning of the executable."
+   j jvm-opt    OPTIONS #{str} "The JVM options to pass to the Java launcher."]
   (with-pre-wrap fileset
     (let [jars   (if file [file] (jars-in-fileset fileset))
           tgt    (tmp-dir!)
-          header (if header (slurp header) default-header)]
+          header (if header
+                   (slurp header)
+                   (default-header (or jvm-opt #{})))]
       (when-not (seq jars)
         (throw (Exception. "No jar files found.")))
       (doseq [jar jars]
@@ -45,9 +51,7 @@
                              io/make-parents))]
           (util/info "Creating %s binary...\n" bin-fname)
           (with-open [bin (FileOutputStream. tgt-file)]
-            (if header
-              (io/copy header bin)
-              (.write bin (.getBytes default-header)))
+            (io/copy header bin)
             (io/copy jar bin))
           (when out-file
             (util/info "Writing %s...\n" (.getPath out-file))
@@ -61,13 +65,14 @@
 
    If `file` is not specified, builds an executable for every jar file in the
    fileset."
-  [f file       PATH    file "The path to the uberjar."
-   o output-dir PATH    str  "The output directory path."
-   n name       NAME    sym  "The name of the project."
-   m main       STR     sym  "The main class."
-   d desc       STR     str  "A description of the project."
-   c copyright  STR     str  "The project's copyright information."
-   v version    VERSION str  "The project version number."]
+  [f file       PATH    file   "The path to the uberjar."
+   o output-dir PATH    str    "The output directory path."
+   n name       NAME    sym    "The name of the project."
+   m main       STR     sym    "The main class."
+   d desc       STR     str    "A description of the project."
+   c copyright  STR     str    "The project's copyright information."
+   v version    VERSION str    "The project version number."
+   j jvm-opt    OPTIONS #{str} "The JVM options to pass to the Java launcher."]
   (assert-required output-dir version name main desc copyright)
   (with-pre-wrap fileset
     (let [jars      (if file [file] (jars-in-fileset fileset))
@@ -89,7 +94,8 @@
                                     :project-name name
                                     :description  desc
                                     :version      version
-                                    :copyright    copyright}
+                                    :copyright    copyright
+                                    :jvm-opts     (or jvm-opt #{})}
                                    xml))
           (util/dosh "launch4j" (.getPath xml-file))))
       (-> fileset (add-resource tgt) commit!))))

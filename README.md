@@ -32,14 +32,34 @@ Alternatively, you can specify an output directory, and the files will be copied
 boot aot pom uber jar bin --output-dir bin
 ```
 
+## JVM Options
+
+JVM options can be supplied to both the `bin` and `exe` tasks:
+
+```
+boot aot pom uber jar bin --jvm-opt -Dfoo=bar --jvm-opt -Dbaz=quux
+```
+
+Alternatively, you can use `task-options!` in your `build.boot`:
+
+```
+(def jvm-opts #{"-Dfoo=bar" "-Dbaz=quux"})
+
+(task-options!
+  bin {:jvm-opt jvm-opts}
+  exe {:jvm-opt jvm-opts})
+```
+
+These options will be passed to the Java launcher each time the executable is run.
+
 ## File Headers
 
-The `bin` task creates binary files out of jars by simply prepending some lines, turning the file into an executable shell script that runs the jar file using `java -jar`. By default, the header it prepends is this:
+The `bin` task creates binary files out of jars by simply prepending some lines, turning the file into an executable shell script that runs the jar file using `java -jar`. By default, the header it prepends is this (`<JVM-OPTS>` is where any JVM options you supply will go):
 
 ```
 #!/bin/sh
 
-exec java -jar $0 "$@"
+exec java <JVM-OPTS> -jar $0 "$@"
 
 
 
@@ -51,6 +71,8 @@ If you'd like to use your own custom header (e.g. to include Java flags, set env
 boot aot pom uber jar bin --header head.sh
 ```
 
+> NOTE: When using a custom header, you must hard-code in any JVM options; the `--jvm-opt` flag is provided as a convenience for when you're using the default header only.
+
 ## Windows executables
 
 The `exe` task can be used to create Windows executables from jar files. This requires that [Launch4j](http://launch4j.sourceforge.net) be installed on your system. Launch4j requires additional configuration, which is typically supplied via a specialized XML file, but the `exe` task allows you to supply the values via task options. The easiest way to do this is to include them in your `build.boot`:
@@ -61,7 +83,8 @@ The `exe` task can be used to create Windows executables from jar files. This re
        :main      'sandwich.core
        :version   "0.1.0"
        :desc      "Run this exe file if you like sandwiches."
-       :copyright "2015 Earl of Sandwich"})
+       :copyright "2015 Earl of Sandwich"
+       :jvm-opt   #{"-Dfoo=bar" "-Dbaz=baf"}})
 ```
 
 Then, to create the executable, run the `exe` task, including an `--output-dir` argument to specify where you would like Launch4j to place the .exe file it outputs:

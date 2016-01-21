@@ -21,7 +21,8 @@
 
 (defn launch4j-config
   [{:keys [out-file jar-file main-class
-            project-name description version copyright]}]
+           project-name description version copyright
+           jvm-opts]}]
   (sexp-as-element
     [:launch4jConfig
      [:headerType "console"]
@@ -29,11 +30,13 @@
      [:jar (.getAbsolutePath jar-file)]
      [:classPath
       [:mainClass main-class]]
-     [:jre
-      [:path]
-      [:minVersion "1.7.0"]
-      [:maxHeapSize "2048"]
-      [:jdkPreference "preferJdk"]]
+     (into [:jre
+            [:path]
+            [:minVersion "1.7.0"]
+            [:maxHeapSize "2048"]
+            [:jdkPreference "preferJdk"]]
+           (for [jvm-opt jvm-opts]
+             [:opt jvm-opt]))
      [:versionInfo
       [:fileVersion (to-four-places version)]
       [:txtFileVersion version]
