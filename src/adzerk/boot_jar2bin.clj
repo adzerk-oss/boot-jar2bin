@@ -87,7 +87,7 @@
               exe-fname  (str fname ".exe")
               xml-file   (io/file tgt xml-fname)
               out-file   (doto (io/file output-dir exe-fname) io/make-parents)]
-          (with-open [xml (FileWriter. xml-file)]
+          (with-open [xml (io/writer xml-file :encoding "UTF-8")]
             (write-launch4j-config {:jar-file     jar
                                     :out-file     out-file
                                     :main-class   main
