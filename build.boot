@@ -1,6 +1,6 @@
 (set-env!
   :source-paths   #{"src"}
-  :dependencies   '[[org.clojure/clojure  "1.7.0"  :scope "provided"]
+  :dependencies   '[[org.clojure/clojure  "1.8.0"  :scope "provided"]
                     [adzerk/bootlaces     "0.1.13" :scope "test"]
                     [org.clojure/data.xml "0.0.8"]])
 
