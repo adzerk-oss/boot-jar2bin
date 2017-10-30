@@ -6,7 +6,7 @@
 
 (require '[adzerk.bootlaces :refer :all])
 
-(def +version+ "1.1.0")
+(def +version+ "1.1.1")
 
 (bootlaces! +version+)
 
@@ -18,3 +18,7 @@
        :scm         {:url "https://github.com/adzerk-oss/boot-jar2bin"}
        :license     {"EPL" "http://www.eclipse.org/legal/epl-v10.html"}})
 
+(deftask deploy
+  "Installs release jar locally and deploys it to Clojars."
+  []
+  (comp (build-jar) (install) (push-release)))
