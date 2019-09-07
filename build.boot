@@ -6,7 +6,7 @@
 
 (require '[adzerk.bootlaces :refer :all])
 
-(def +version+ "1.1.1")
+(def +version+ "1.2.0")
 
 (bootlaces! +version+)
 

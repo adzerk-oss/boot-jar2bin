@@ -1,5 +1,28 @@
 # CHANGELOG
 
+## 1.2.0 (2019-09-07)
+
+* Added a `--jre-path` option to the `exe` task, allowing one to specify the
+  path where Java is expected to be found on the end user's system.
+
+  From my understanding, the launch4j default behavior is to locate Java via the
+  Windows registry. However, there have been reported issues around some
+  distributions of Java (e.g. AdoptOpenJDK 11) not adding the appropriate
+  information to the registry, and apparently using whatever `java` is on the
+  `PATH` is not the default behavior of the executable emitted by launch4j.
+
+  According to discussions [here](https://sourceforge.net/p/launch4j/bugs/197/)
+  and [here](https://sourceforge.net/p/launch4j/feature-requests/127/), you can
+  configure launch4j to use `%JAVA_HOME%;%PATH%` in the
+  `<jre><path>...</path></jre>` part of the config file, and that will make it
+  so that the executable will try to find Java via the paths specified in the
+  `%JAVA_HOME%` and `%PATH%` Windows environment variables.
+
+  You can now do this by specifying `--jre-path "%JAVA_HOME%;%PATH%"` in the
+  `exe` task options, and hopefully the executables you create will work if the
+  end user has a distribution of Java that doesn't update the Windows registry
+  appropriately.
+
 ## 1.1.1 (2017-10-30)
 
 * Fixed an encoding issue when running the `exe` task on Windows. ([#2](https://github.com/adzerk-oss/boot-jar2bin/pull/2))

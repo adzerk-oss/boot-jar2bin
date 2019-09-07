@@ -22,7 +22,7 @@
 (defn launch4j-config
   [{:keys [out-file jar-file main-class
            project-name description version copyright
-           jvm-opts]}]
+           jvm-opts jre-path]}]
   (sexp-as-element
     [:launch4jConfig
      [:headerType "console"]
@@ -31,7 +31,9 @@
      [:classPath
       [:mainClass main-class]]
      (into [:jre
-            [:path]
+            (if jre-path
+              [:path jre-path]
+              [:path])
             [:minVersion "1.7.0"]
             [:maxHeapSize "2048"]
             [:jdkPreference "preferJdk"]]

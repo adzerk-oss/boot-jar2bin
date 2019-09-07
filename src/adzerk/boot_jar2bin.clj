@@ -72,7 +72,8 @@
    d desc       STR     str    "A description of the project."
    c copyright  STR     str    "The project's copyright information."
    v version    VERSION str    "The project version number."
-   j jvm-opt    OPTIONS #{str} "The JVM options to pass to the Java launcher."]
+   j jvm-opt    OPTIONS #{str} "The JVM options to pass to the Java launcher."
+   p jre-path   STR     str    "(optional) The path where Java is expected to be found on the end user's system."]
   (assert-required output-dir version name main desc copyright)
   (with-pre-wrap fileset
     (let [jars      (if file [file] (jars-in-fileset fileset))
@@ -95,7 +96,8 @@
                                     :description  desc
                                     :version      version
                                     :copyright    copyright
-                                    :jvm-opts     (or jvm-opt #{})}
+                                    :jvm-opts     (or jvm-opt #{})
+                                    :jre-path     jre-path}
                                    xml))
           (util/dosh "launch4j" (.getPath xml-file))))
       (-> fileset (add-resource tgt) commit!))))
